@@ -155,7 +155,6 @@ public class ExpiringHashMap<K, V> implements Map<K, V> {
     private void removeIfExpired(final Object key, final long now) {
         final Long expirationTime = this.expirationMap.get(key);
         if (isExpired(now, expirationTime)) {
-            // todo: need to deal with unchecked cast.. realistically it won't be a problem though
             this.expired.put((K) key, this.fingerTable.get(key));
             this.fingerTable.remove(key);
         }
