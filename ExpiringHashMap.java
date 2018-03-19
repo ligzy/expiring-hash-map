@@ -17,8 +17,7 @@ public class ExpiringHashMap<K, V> implements Map<K, V> {
     }
 
     /********************************************************************************
-     * Methods for internal use. These are used determine whether entries have
-     * expired and to expire them.
+     * Implementation of Map interface
      ********************************************************************************/
 
     @Override
@@ -93,47 +92,9 @@ public class ExpiringHashMap<K, V> implements Map<K, V> {
         removeAllExpired(now());
         return unmodifiableSet(fingerTable.entrySet());
     }
-
+    
     /********************************************************************************
-     * Methods for internal use. These are used determine whether entries have
-     * expired and to expire them.
-     ********************************************************************************/
-
-    private boolean isExpired(final long now, final Long expirationTimeObject) {
-        if (expirationTimeObject != null) {
-            return now - expirationTimeObject.longValue() >= this.timeToLive;
-        }
-        return false;
-    }
-
-    private void removeAllExpired(final long now) {
-        final Iterator<Entry<K, Long>> iterator = expirationMap.entrySet().iterator();
-        while (iterator.hasNext()) {
-            final Map.Entry<K, Long> expirationEntry = iterator.next();
-            if (isExpired(now, expirationEntry.getValue())) {
-                V value = this.fingerTable.remove(expirationEntry.getKey());
-                this.expired.put(expirationEntry.getKey(), value);
-                iterator.remove();
-            }
-        }
-    }
-
-    private void removeIfExpired(final Object key, final long now) {
-        final Long expirationTime = this.expirationMap.get(key);
-        if (isExpired(now, expirationTime)) {
-            // todo: need to deal with unchecked cast.. realistically it won't be a problem though
-            this.expired.put((K) key, this.fingerTable.get(key));
-            this.fingerTable.remove(key);
-        }
-    }
-
-    private long now() {
-        return System.nanoTime();
-    }
-
-    /********************************************************************************
-     * The methods below are for accessing the expired entries. Obviously, there are
-     * no methods to put entries in here. But they may be accessed and removed.
+     * Methods for manipulating expired entries
      ********************************************************************************/
 
     public Set<K> expiredKeySet() {
@@ -167,4 +128,41 @@ public class ExpiringHashMap<K, V> implements Map<K, V> {
     public Set<java.util.Map.Entry<K, V>> expiredEntrySet() {
         return unmodifiableSet(this.expired.entrySet());
     }
+
+    /********************************************************************************
+     * Methods for internal use.
+     ********************************************************************************/
+
+    private boolean isExpired(final long now, final Long expirationTimeObject) {
+        if (expirationTimeObject != null) {
+            return now - expirationTimeObject.longValue() >= this.timeToLive;
+        }
+        return false;
+    }
+
+    private void removeAllExpired(final long now) {
+        final Iterator<Entry<K, Long>> iterator = expirationMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            final Map.Entry<K, Long> expirationEntry = iterator.next();
+            if (isExpired(now, expirationEntry.getValue())) {
+                V value = this.fingerTable.remove(expirationEntry.getKey());
+                this.expired.put(expirationEntry.getKey(), value);
+                iterator.remove();
+            }
+        }
+    }
+
+    private void removeIfExpired(final Object key, final long now) {
+        final Long expirationTime = this.expirationMap.get(key);
+        if (isExpired(now, expirationTime)) {
+            // todo: need to deal with unchecked cast.. realistically it won't be a problem though
+            this.expired.put((K) key, this.fingerTable.get(key));
+            this.fingerTable.remove(key);
+        }
+    }
+
+    private long now() {
+        return System.nanoTime();
+    }
+    
 }
