@@ -98,6 +98,7 @@ public class ExpiringHashMap<K, V> implements Map<K, V> {
      ********************************************************************************/
 
     public Set<K> expiredKeySet() {
+        removeAllExpired(now());
         return this.expired.keySet();
     }
 
@@ -106,10 +107,12 @@ public class ExpiringHashMap<K, V> implements Map<K, V> {
     }
 
     public int expiredSize() {
+        removeAllExpired(now());
         return this.expired.size();
     }
 
     public boolean expiredIsEmpty() {
+        removeAllExpired(now());
         return !this.expired.isEmpty();
     }
 
@@ -122,10 +125,12 @@ public class ExpiringHashMap<K, V> implements Map<K, V> {
     }
 
     public Collection<V> expiredValues() {
+        removeAllExpired(now());
         return this.expired.values();
     }
 
     public Set<java.util.Map.Entry<K, V>> expiredEntrySet() {
+        removeAllExpired(now());
         return unmodifiableSet(this.expired.entrySet());
     }
 
